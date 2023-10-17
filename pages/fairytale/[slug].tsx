@@ -4,7 +4,7 @@ import { iFairytale } from 'lib/sanity.queries'
 import { GetStaticProps } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
-
+import styles from './FairtalePage.module.css'
 interface PageProps {
   fairytale: iFairytale
 }
@@ -21,17 +21,41 @@ const FairtalePage = ({ fairytale }: PageProps) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const generateNewStoryImage = async () => {
-    // Use a try catch to fetch an image from the endpoint ‘/api/openai-image’
-    // The endpoint expects a POST request with a JSON body containing a prompt (imagePrompt)
-    // The response is a JSON object with a text property
-    // Set the storyImage state to the text property of the response object
-    // If the response object does not have a text property, log an error to the console
+    // Add code here to generate a new story image based on sanity data, be creative!
 
-    const prompt = `I am a placeholder prompt, I should be replaced with something more interesting`
+    // Use values from the fairytale object to generate a prompt, you might have to get creative here.
+    // The prompt should be a string that is passed to the openai-image API.
+    // The API will return a text string that you can use to set the storyImage state.
+    // The API is not perfect, so you might have to try a few times to get a good result.
+
+    const imagePrompt =
+      'Make a cute image with a title of: ${title}, and a description of: ${generateText}'
+
+    try {
+      const response = await fetch('/api/openai-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+        }),
+      }).then((res) => res.json())
+
+      if (response.text) {
+        setStoryImage(response.text)
+      } else {
+        console.log('Error: response text is undefined')
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handleGenerateImage = async () => {
-    // Add your code here
+    setIsLoading(true)
+    await generateNewStoryImage()
+    setIsLoading(false)
   }
 
   return (
@@ -43,9 +67,9 @@ const FairtalePage = ({ fairytale }: PageProps) => {
       >
         Generate image
       </button>
-      {isLoading && <p>Loading...</p>}
+      {isLoading && <div className={styles.loader}></div>}
 
-      {storyImage && <Image src={storyImage} alt="" width={256} height={256} />}
+      {storyImage && <Image src={storyImage} alt="" width={512} height={512} />}
     </main>
   )
 }
